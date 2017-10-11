@@ -1,0 +1,203 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define STRMSIZE 30
+
+struct student
+{
+    char name[STRMSIZE];
+    int ID;
+    struct student *left,*right;
+}*root;
+struct student *newstd(char nme[STRMSIZE],int id);
+struct student *lNode(struct student *n,char nme[STRMSIZE],int id);
+struct student *rNode(struct student *n,char nme[STRMSIZE],int id);
+struct student *insertstudent(struct student *nwstd,char nme[STRMSIZE],int id );
+void studentsearch(struct student *stud,int id);
+void studentdelete(struct student *treert,int id);
+void display(struct student *stud);
+struct student *treeroot();
+int main()
+{
+
+    FILE *file;
+    file=fopen("students.txt","a+");
+    struct student *treert;
+    char name[STRMSIZE];
+    int i,id,stdnum,idsrch,iddel;
+
+
+//    treert=treeroot();
+//            strcpy(treert->name,name);
+//            treert->ID=id;
+    printf("Please enter the number of students:");
+    scanf("%d",&stdnum);
+    for(i=1; i<=stdnum; i++)
+    {
+        if(i==1)
+        {
+            printf("Please enter the name and the ID of the student #1(root) you need to insert:\n");//creating root
+            scanf("%s%d",&name,&id);
+//            strcpy(treert->name,name);
+//            treert->ID=id;
+            treert=newstd(name,id);
+            continue;
+        }
+        printf("Please enter the name and the ID of the student #%d you need to insert:\n",i);
+        scanf("%s%d",&name,&id);
+        fprintf(file,"%s,%d\n",name,id);
+        insertstudent(treert,name,id);
+    }
+    fclose(file);
+//    printf("\nPlease enter the id of the student you need to search for: ");
+//    scanf("%d",&idsrch);
+//    studentsearch(treert,idsrch);
+    display(treert);
+    printf("\nPlease enter the id of the student you need to delete: ");
+    scanf("%d",&iddel);
+    studentdelete(treert,iddel);
+    display(treert);
+    return 0;
+}
+
+struct student *newstd(char nme[STRMSIZE],int id)
+{
+    struct student *n;
+    n=(struct student*)malloc(sizeof(struct student));
+    strcpy(n->name,nme);
+    n->ID=id;
+    n->left=NULL;
+    n->right=NULL;
+    return n;
+}
+struct student *lNode(struct student *n,char nme[STRMSIZE],int id)
+{
+    struct student *newstudent=newstd(nme,id);
+    n->left=newstudent;
+    return newstudent;
+}
+struct student *rNode(struct student *n,char nme[STRMSIZE],int id)
+{
+    struct student *newstudent=newstd(nme,id);
+    n->right=newstudent;
+    return newstudent;
+}
+struct student *treeroot()
+{
+    struct student *temp;
+    temp=(struct student*)malloc(sizeof(struct student));
+    strcpy(temp->name,"0");
+    temp->ID=0;
+    temp->left=NULL;
+    temp->right=NULL;
+    return temp;
+}
+struct student *insertstudent(struct student *nwstd,char nme[STRMSIZE],int id )
+{
+    if(nwstd==NULL)
+    {
+        return newstd(nme,id);
+    }
+    else
+    {
+        if(id<nwstd->ID||strcmp(nme,nwstd->name)<0)
+        {
+            nwstd->left=insertstudent(nwstd->left,nme,id);
+            return nwstd;
+        }
+        else if(id>nwstd->ID||strcmp(nme,nwstd->name)>0)
+        {
+            nwstd->right=insertstudent(nwstd->right,nme,id);
+            return nwstd;
+        }
+        else if(id==nwstd->ID)
+        {
+            printf("\nThe student already exists!");
+        }
+    }
+}
+void studentsearch(struct student *stud,int id)
+{
+    while(stud)
+    {
+        if(id==stud->ID)
+        {
+            printf("\nStudent Found!");
+            printf("\nName:%s\nID:%d",stud->name,stud->ID);
+            return;
+        }
+        else if(id<stud->ID)
+        {
+            return studentsearch(stud->left,id);
+        }
+        else if(id>stud->ID)
+        {
+            return studentsearch(stud->right,id);
+        }
+    }
+    printf("\nThe student doesn't exist!\n");
+}
+void studentdelete(struct student *treert,int id)
+{
+    struct student *current=treert,*temp,*parent;
+    if(!current)
+    {
+        printf("\nThis student doesn't exist!");
+        return;
+    }
+    if(current->ID==id)
+    {
+        if(!current->right&&!current->left)
+        {
+            treert=NULL;
+            free(current);
+        }
+        else if(!current->right)
+        {
+            treert=current->left;
+            free(current);
+        }
+        else
+        {
+            temp=current->right;
+            if(!temp->left)
+            {
+                temp->left=current->left;
+            }
+            else
+            {
+                while(temp->left)
+                {
+                    parent=temp;
+                    temp=temp->left;
+                }
+                parent->left=temp->right;
+                temp->left=current->left;
+                temp->right=current->right;
+            }
+            treert=temp;
+            free(current);
+        }
+    }
+    else if(id>current->ID)
+    {
+        return studentdelete(treert->right,id);
+    }
+    else if(id<current->ID)
+    {
+        return studentdelete(treert->left,id);
+    }
+}
+void display(struct student *stud)
+{
+    if(stud==NULL)
+    {
+        return;
+    }
+    else
+    {
+        display(stud->left);
+        printf("\nName: %s\nID: %d\n",stud->name,stud->ID);
+        display(stud->right);
+    }
+}
+

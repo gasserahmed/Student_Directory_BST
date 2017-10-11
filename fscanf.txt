@@ -1,0 +1,2 @@
+fscanf(file,"%[^,],%d\n",name,&id);
+        treert=insertstudent(treert,name,id);
